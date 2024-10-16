@@ -162,3 +162,13 @@ resource "aws_s3_bucket_policy" "public_read_access" {
   - It can operates command without "yes"
 
 ![image](https://github.com/user-attachments/assets/74bc72b1-499a-4ef0-8f87-f48da2af2140)
+![image](https://github.com/user-attachments/assets/cc01def0-26b1-4d97-a840-3bffc43963dd)
+
+
+## 3. Update File
+```hcl
+etag          = filemd5("index.html")  # 파일이 변경될 때 MD5 체크섬을 사용해 변경 사항 감지
+```
+This is the command which can update content. If you want to update contents, should use this command in your terrafomr file with resource command.
+
+## 4. Create main.html in existing bucket 2
