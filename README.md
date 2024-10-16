@@ -1,90 +1,115 @@
-# Terraform-with-AWS
 
-Today, I use Terraform with AWS. This is the reason why use AWS with Terraform. Terraform allows you to define and manage your infrastructure as code. With Terraform, your infrastructure is managed in code, which means you can store it in version control systems like Git. In complex environments, some resources depend on others (for example, an EC2 instance depending on a security group or an S3 bucket). Using AWS with Terraform significantly enhances infrastructure management by introducing automation, consistency, and efficiency. It enables teams to manage resources in a scalable and repeatable manner, supports multi-cloud deployments, and provides transparency with version control and planning features. Overall, Terraform helps simplify and streamline cloud infrastructure management for organizations of any size.
+# 🌐 Terraform with AWS S3 Hands-on Guide
 
-## Hands-on environment
-Ubuntu 22.04 LTS
+Today, we explore how to use Terraform to interact with AWS, focusing on creating and managing an S3 bucket with various configurations. Let's dive into the reason why Terraform is a great choice for managing AWS infrastructure.
+
+## Why use AWS with Terraform?
+
+Terraform allows you to define and manage your infrastructure as **code**. This infrastructure-as-code approach enables you to store your infrastructure setup in version control systems like Git. 
+
+Using AWS with Terraform enhances infrastructure management by introducing:
+- **Automation** 🤖: You can automate the entire infrastructure setup.
+- **Consistency** 🔄: Reuse your Terraform code for similar setups, ensuring uniformity.
+- **Scalability** 📈: Easily manage resources across multi-cloud environments.
+- **Version Control & Planning** 📝: Keep track of your infrastructure changes and plan accordingly.
+
+Terraform is a powerful tool to simplify and streamline cloud infrastructure management, regardless of your organization's size.
+
+---
+
+## 💻 Hands-on Environment
+
+This guide was built on:
+- **OS**: Ubuntu 22.04 LTS
+- **AWS S3 Bucket**: `ce05-bucket2`
 ![image](https://github.com/user-attachments/assets/ce0cf0e6-6257-4c69-8090-20ce8974693c)
-
-## Create Hands-on file
 ![image](https://github.com/user-attachments/assets/146275b8-022e-4206-920e-9a553d86a753)
 
-## 1. IAM Role: `ce05-IAM`
 
-- **Name**: `ce05-IAM`
-- **Purpose**: Allows EC2 instances to assume this role.
-- **Assume Role Policy**: 
-  This policy allows the EC2 service to assume the role:
-  ```json
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Action": "sts:AssumeRole",
-        "Effect": "Allow",
-        "Principal": {
-          "Service": "ec2.amazonaws.com"
-        }
+---
+
+## 🛠️ Step-by-Step Implementation
+
+### 1️⃣ IAM Role: `ce05-IAM`
+
+This IAM role allows EC2 instances to assume this role.
+
+#### Role Configuration:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": "sts:AssumeRole",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "ec2.amazonaws.com"
       }
-    ]
-  }
-  ```
+    }
+  ]
+}
+```
 
-### 2. IAM Policy: `ce05-policy`
+---
 
-- **Name**: `ce05-policy`
-- **Purpose**: Grants full access to all S3 resources.
-- **Policy Definition**:
-  This policy grants full S3 access (`s3:*`) to all S3 resources (`*`):
-  ```json
-  {
-    "Version": "2012-10-17",
-    "Statement": [
-      {
-        "Effect": "Allow",
-        "Action": [
-          "s3:*"
-        ],
-        "Resource": [
-          "*"
-        ]
-      }
-    ]
-  }
-  ```
+### 2️⃣ IAM Policy: `ce05-policy`
 
-### 3. IAM Role Policy Attachment: `attach_ce05_policy`
+The policy grants **full access** to all S3 resources.
 
-- **Name**: `attach_ce05_policy`
-- **Purpose**: Attaches the `ce05-policy` to the `ce05-IAM` role.
-- **Role**: `ce05-IAM`
-- **Policy**: `ce05-policy`
-.
-### 4. Initialize Terraform**:
-   ```bash
-   terraform init
-   ```
-### 5. Apply the configuration** to create the IAM role, policy, and attach the policy:
-   ```bash
-   terraform apply
-   ```
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:*"
+      ],
+      "Resource": [
+        "*"
+      ]
+    }
+  ]
+}
+```
+
+---
+
+### 3️⃣ Attach Policy to Role
+
+```hcl
+resource "aws_iam_role_policy_attachment" "attach_ce05_policy" {
+  role       = aws_iam_role.ce05_IAM.name
+  policy_arn = aws_iam_policy.ce05_policy.arn
+}
+```
+### 🤖 Initialize and apply Terraform
+```hcl
+terraform init
+
+terraform apply
+
+```
 ![image](https://github.com/user-attachments/assets/b04ceea5-944f-41d0-bf8d-5e147c162782)
 ![image](https://github.com/user-attachments/assets/428e7788-2790-491f-bd2b-e8a93e2d1665)
 ![image](https://github.com/user-attachments/assets/d8355adb-8e54-499f-bae3-f7f057524f70)
 
-This will create an IAM role named `ce05-IAM` and attach the policy `ce05-policy` that allows full access to S3 resources. 
+---
 
-## 2. Create Bucket with index.html
-### 1. S3 Bucket: `ce05-bucket2`
+### 4️⃣ Create an S3 Bucket with Terraform
+
+We will create a bucket `ce05-bucket2` to store files and host a static website.
 
 ```hcl
 resource "aws_s3_bucket" "bucket2" {
-  bucket = "ce05-bucket2"  # 생성하고자 하는 S3 버킷 이름
+  bucket = "ce05-bucket2"  # Name of the S3 bucket
 }
 ```
-- **Purpose**: Creates an S3 bucket for storing files and hosting a static website.
 
-### 2. Public Access Block: `bucket2_public_access_block`
+---
+
+### 5️⃣ Configure Public Access
 
 ```hcl
 resource "aws_s3_bucket_public_access_block" "bucket2_public_access_block" {
@@ -95,44 +120,42 @@ resource "aws_s3_bucket_public_access_block" "bucket2_public_access_block" {
   restrict_public_buckets = false
 }
 ```
-- **Purpose**: Manages public access settings for the S3 bucket.
-- **Settings**:
-  - Allows public ACLs and bucket policies.
-  - Does not restrict public bucket access.
 
-### 3. S3 Object: `index.html`
+---
+
+### 6️⃣ Upload the `index.html` File
 
 ```hcl
 resource "aws_s3_object" "index" {
-  bucket        = aws_s3_bucket.bucket2.id  # 생성된 S3 버킷 이름 사용
+  bucket        = aws_s3_bucket.bucket2.id  # S3 bucket ID
   key           = "index.html"
   source        = "index.html"
   content_type  = "text/html"
-  etag          = filemd5("index.html")  # 파일이 변경될 때 MD5 체크섬을 사용해 변경 사항 감지
+  etag          = filemd5("index.html")  # MD5 checksum to detect changes
 }
 ```
-- **Purpose**: Uploads the `index.html` file to the bucket with public access.
-- **MD5 Checksum**: Ensures that changes in the file are detected by using the MD5 checksum.
 
-### 4. Website Hosting Configuration: `xweb_bucket_website`
+---
+
+### 7️⃣ Host a Static Website
 
 ```hcl
 resource "aws_s3_bucket_website_configuration" "xweb_bucket_website" {
-  bucket = aws_s3_bucket.bucket2.id  # 생성된 S3 버킷 이름 사용
+  bucket = aws_s3_bucket.bucket2.id
 
   index_document {
     suffix = "index.html"
   }
 }
 ```
-- **Purpose**: Configures the S3 bucket for static website hosting.
-- **Index Document**: Specifies `index.html` as the default document for the website.
 
-### 5. Public Read Policy: `public_read_access`
+---
+
+### 8️⃣ Public Access Policy for the Website
 
 ```hcl
 resource "aws_s3_bucket_policy" "public_read_access" {
-  bucket = aws_s3_bucket.bucket2.id  # 올바른 버킷 이름 사용
+  bucket = aws_s3_bucket.bucket2.id
 
   policy = jsonencode({
     "Version": "2012-10-17",
@@ -142,33 +165,70 @@ resource "aws_s3_bucket_policy" "public_read_access" {
         "Principal": "*",
         "Action": "s3:GetObject",
         "Resource": [
-          "arn:aws:s3:::ce05-bucket2",         # 버킷 자체에 대한 접근
-          "arn:aws:s3:::ce05-bucket2/*"        # 버킷 내 모든 객체에 대한 접근
+          "arn:aws:s3:::ce05-bucket2",
+          "arn:aws:s3:::ce05-bucket2/*"
         ]
       }
     ]
   })
 }
 ```
-- **Purpose**: Grants public read access to all objects in the S3 bucket.
-- **Policy**:
-  - Allows anyone to retrieve objects from the bucket.
-  - Applies to both the bucket itself and all its objects.
 
- ### 6. Apply
-  ```bash
-   terraform apply -auto-approve
-   ```
-  - It can operates command without "yes"
-
+### 🤖 Apply without "YES"
+```hcl
+ terraform apply -auto-approve
+```
 ![image](https://github.com/user-attachments/assets/74bc72b1-499a-4ef0-8f87-f48da2af2140)
 ![image](https://github.com/user-attachments/assets/cc01def0-26b1-4d97-a840-3bffc43963dd)
 
+---
 
-## 3. Update File
+### 9️⃣ Upload a New `main.html` File
+
+Now, let’s upload `main.html` to our existing bucket:
+
 ```hcl
-etag          = filemd5("index.html")  # 파일이 변경될 때 MD5 체크섬을 사용해 변경 사항 감지
+resource "aws_s3_object" "main_html" {
+  bucket = "ce05-bucket2"
+  key    = "main.html"
+  source = "/home/username/Terakim/main.html"  # Local file path
+  content_type = "text/html"
+}
+```
+
+💻When you want to update file, USE THIS!
+```hcl
+etag          = filemd5("index.html")
 ```
 This is the command which can update content. If you want to update contents, should use this command in your terrafomr file with resource command.
 
-## 4. Create main.html in existing bucket 2
+---
+
+### 🔟 Output the S3 Object URL
+
+```hcl
+output "main_html_url" {
+  value = "https://${aws_s3_object.main_html.bucket}.s3.amazonaws.com/${aws_s3_object.main_html.key}"
+}
+```
+
+### ✅ Apply the Terraform Configuration
+
+```bash
+terraform init
+terraform apply -auto-approve
+```
+
+![image](https://github.com/user-attachments/assets/b6278337-f0c0-4d1b-8c41-59ba301001c6)
+
+This command will automatically create your IAM role, S3 bucket, and the public policies, and it will upload the `index.html` and `main.html` files to the S3 bucket. You can access the `main.html` via the URL outputted by Terraform.
+
+---
+
+## 📝 Conclusion
+
+Terraform and AWS together provide a powerful way to automate and manage cloud infrastructure. By storing infrastructure as code, you can ensure your resources are created consistently, updated properly, and easily version-controlled. 
+
+With a few simple Terraform commands, we were able to create an S3 bucket, set up public access policies, and upload files. 🎉
+
+Happy Terraforming! 🚀
