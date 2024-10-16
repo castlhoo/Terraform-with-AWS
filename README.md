@@ -91,7 +91,7 @@ terraform init
 terraform apply
 
 ```
-![image](https://github.com/user-attachments/assets/b04ceea5-944f-41d0-bf8d-5e147c162782)
+![image](https://github.com/user-attachments/assets/b5d0380f-703b-4657-8d84-0a3fc297ad97)
 ![image](https://github.com/user-attachments/assets/428e7788-2790-491f-bd2b-e8a93e2d1665)
 ![image](https://github.com/user-attachments/assets/d8355adb-8e54-499f-bae3-f7f057524f70)
 
